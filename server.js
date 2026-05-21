@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
         <div class="card">
           <h1>Jenkins CI/CD Lab Project</h1>
           <p>This web application is deployed using Docker and Kubernetes.</p>
-          <p>CI/CD automation is managed by Jenkins.</p>
+          <p>CI/CD automation is automatically managed by Jenkins Webhook.</p>
           <p class="tag">Prometheus and Grafana are used for monitoring.</p>
         </div>
       </body>
