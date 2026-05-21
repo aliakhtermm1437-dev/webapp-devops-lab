@@ -7,6 +7,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
@@ -24,17 +25,43 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+
                     sh 'docker push $DOCKER_IMAGE:$IMAGE_TAG'
                     sh 'docker push $DOCKER_IMAGE:latest'
                 }
             }
         }
 
+        stage('Update Kubernetes YAML') {
+            steps {
+
+                sh """
+                sed -i 's|image: .*|image: $DOCKER_IMAGE:$IMAGE_TAG|' k8s/deployment.yaml
+                """
+
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl set image deployment/webapp-deployment webapp-container=$DOCKER_IMAGE:$IMAGE_TAG'
+
+                sh 'kubectl apply -f k8s/mysql.yaml'
+
+                sh 'kubectl apply -f k8s/deployment.yaml'
+
+                sh 'kubectl apply -f k8s/service.yaml'
+
+                sh 'kubectl rollout status deployment/mysql-deployment'
+
                 sh 'kubectl rollout status deployment/webapp-deployment'
             }
         }

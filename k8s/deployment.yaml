@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: webapp-container
-        image: muzammilakh123/webapp-devops-lab:v1
+        image: $DOCKER_IMAGE:$IMAGE_TAG
         ports:
         - containerPort: 3000
